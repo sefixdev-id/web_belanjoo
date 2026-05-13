@@ -3,7 +3,7 @@ import { formatCurrency } from '../utils/format.js';
 
 const whatsappNumber = '6282385414776';
 
-export default function ProductDetail({ product, onClose, onAddToCart }) {
+export default function ProductDetail({ product, onClose, onAddToCart, canShop = true }) {
   if (!product) return null;
 
   const message = encodeURIComponent(
@@ -26,11 +26,23 @@ export default function ProductDetail({ product, onClose, onAddToCart }) {
             <span>Stok {product.stock}</span>
             {product.soldCount > 0 && <span>Terjual {product.soldCount}</span>}
           </div>
+          <div className="product-detail__summary">
+            <div>
+              <span>Kategori</span>
+              <strong>{product.category || 'Produk'}</strong>
+            </div>
+            <div>
+              <span>Status</span>
+              <strong>{product.stock > 0 ? 'Siap dibeli' : 'Stok habis'}</strong>
+            </div>
+          </div>
           <p>{product.description || 'Deskripsi produk belum tersedia.'}</p>
           <div className="button-row">
-            <button className="button button--primary" type="button" onClick={() => onAddToCart(product)} disabled={product.stock <= 0}>
-              Tambah ke keranjang
-            </button>
+            {canShop && (
+              <button className="button button--primary" type="button" onClick={() => onAddToCart(product)} disabled={product.stock <= 0}>
+                Tambah ke keranjang
+              </button>
+            )}
             <a className="button button--ghost" href={whatsappUrl} target="_blank" rel="noreferrer">
               WhatsApp
             </a>

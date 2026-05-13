@@ -27,7 +27,7 @@ const asArray = (data, keys = []) => {
   return [];
 };
 
-const normalizeImageUrl = (value) => {
+export const normalizeImageUrl = (value) => {
   const rawUrl = String(value ?? '').trim();
   if (!rawUrl) return '';
 
@@ -120,6 +120,39 @@ export const mapProduct = (raw = {}) => ({
   soldCount: toNumber(raw.terjual ?? raw.sold_count ?? raw.soldCount ?? raw.jumlah_terjual),
 });
 
+export const productToApi = (product = {}) => ({
+  id: product.id || '',
+  nama: product.name || '',
+  kategori: product.category || '',
+  harga: toNumber(product.price),
+  deskripsi: product.description || '',
+  gambar_url: product.imageUrl || '',
+  stok: toNumber(product.stock),
+  is_best_seller: Boolean(product.isBestSeller),
+  terjual: toNumber(product.soldCount),
+});
+
+export const mapCategory = (raw = {}) => {
+  if (typeof raw === 'string') {
+    return { id: raw, name: raw, icon: '', order: 0, active: true };
+  }
+  return {
+    id: String(raw.id ?? raw.nama ?? raw.name ?? ''),
+    name: String(raw.nama ?? raw.name ?? '').trim(),
+    icon: String(raw.ikon ?? raw.icon ?? '').trim(),
+    order: toNumber(raw.urutan ?? raw.order),
+    active: toBool(raw.aktif ?? raw.active, true),
+  };
+};
+
+export const categoryToApi = (category = {}) => ({
+  id: category.id || '',
+  nama: category.name || '',
+  ikon: category.icon || '',
+  urutan: toNumber(category.order),
+  aktif: category.active !== false,
+});
+
 const mapOrderItem = (raw = {}) => ({
   id: String(raw.id ?? ''),
   orderId: String(raw.pesanan_id ?? raw.order_id ?? ''),
@@ -137,6 +170,7 @@ export const mapOrder = (raw = {}) => ({
   userEmail: String(raw.email_user ?? raw.user_email ?? '').trim(),
   total: toNumber(raw.total),
   status: String(raw.status ?? 'pending').trim() || 'pending',
+  paymentStatus: String(raw.payment_status ?? raw.paymentStatus ?? '').trim(),
   source: String(raw.sumber ?? raw.source ?? 'app').trim(),
   createdAt: String(raw.created_at ?? '').trim(),
   updatedAt: String(raw.updated_at ?? '').trim(),
@@ -148,6 +182,15 @@ export const mapBanner = (raw = {}) => ({
   imageUrl: normalizeImageUrl(raw.image_url ?? raw.gambar_url ?? raw.imageUrl),
   title: String(raw.title ?? raw.judul ?? '').trim(),
   isActive: toBool(raw.is_active ?? raw.aktif ?? raw.active, true),
+  createdAt: String(raw.created_at ?? '').trim(),
+  updatedAt: String(raw.updated_at ?? '').trim(),
+});
+
+export const bannerToApi = (banner = {}) => ({
+  id: banner.id || '',
+  image_url: banner.imageUrl || '',
+  title: banner.title || '',
+  is_active: banner.isActive !== false,
 });
 
 export const mapUser = (raw = {}) => ({
@@ -157,6 +200,8 @@ export const mapUser = (raw = {}) => ({
   role: String(raw.role ?? 'user').trim(),
   adminToken: String(raw.admin_token ?? raw.adminToken ?? '').trim(),
 });
+
+export const isAdminRole = (role) => ['admin', 'super_admin'].includes(String(role || '').trim());
 
 export const orderStatusOptions = [
   { value: 'pending', label: 'Pesanan Masuk' },
@@ -186,8 +231,8 @@ export const apiClient = {
   async listCategories() {
     const data = await getJson('categories');
     return asArray(data, ['categories', 'items', 'data'])
-      .map((item) => String(item.nama ?? item.name ?? item).trim())
-      .filter(Boolean);
+      .map(mapCategory)
+      .filter((item) => item.name);
   },
   async listBanners({ activeOnly = true } = {}) {
     const data = await getJson('banners', { active_only: activeOnly ? 'true' : 'false' });
@@ -198,6 +243,50 @@ export const apiClient = {
   async login({ email, password }) {
     const data = await postJson({ action: 'login', email, password });
     return mapUser(data);
+  },
+  async register({ name, email, password }) {
+    const data = await postJson({ action: 'register', nama: name, email, password });
+    return mapUser(data);
+  },
+  async createProduct({ adminToken, product }) {
+    const data = await postJson({
+      action: 'createProduct',
+      admin_token: adminToken,
+      product: productToApi(product),
+    });
+    return mapProduct(data);
+  },
+  async updateProduct({ adminToken, product }) {
+    const data = await postJson({
+      action: 'updateProduct',
+      admin_token: adminToken,
+      id: product.id,
+      product: productToApi(product),
+    });
+    return mapProduct(data);
+  },
+  async deleteProduct({ adminToken, id }) {
+    return postJson({ action: 'deleteProduct', admin_token: adminToken, id });
+  },
+  async createCategory({ adminToken, category }) {
+    const data = await postJson({
+      action: 'createCategory',
+      admin_token: adminToken,
+      category: categoryToApi(category),
+    });
+    return mapCategory(data);
+  },
+  async updateCategory({ adminToken, category }) {
+    const data = await postJson({
+      action: 'updateCategory',
+      admin_token: adminToken,
+      id: category.id,
+      category: categoryToApi(category),
+    });
+    return mapCategory(data);
+  },
+  async deleteCategory({ adminToken, id, name }) {
+    return postJson({ action: 'deleteCategory', admin_token: adminToken, id, nama: name });
   },
   async createOrder({ user, items, source = 'app' }) {
     return postJson({
@@ -220,6 +309,14 @@ export const apiClient = {
     const data = await postJson({ action: 'listOrders', admin_token: adminToken });
     return asArray(data, ['orders', 'items', 'data']).map(mapOrder);
   },
+  async listMyOrders(user) {
+    const data = await postJson({
+      action: 'listMyOrders',
+      user_id: user.id,
+      email: user.email,
+    });
+    return asArray(data, ['orders', 'items', 'data']).map(mapOrder);
+  },
   async updateOrderStatus({ adminToken, id, status }) {
     return postJson({
       action: 'updateOrderStatus',
@@ -230,5 +327,50 @@ export const apiClient = {
   },
   async dashboard(adminToken) {
     return postJson({ action: 'dashboard', admin_token: adminToken });
+  },
+  async uploadImage({ adminToken, file, target = 'product' }) {
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || '').split(',')[1] || '');
+      reader.onerror = () => reject(new Error('Gagal membaca file gambar.'));
+      reader.readAsDataURL(file);
+    });
+    const data = await postJson({
+      action: 'uploadImage',
+      admin_token: adminToken,
+      file_name: file.name,
+      mime_type: file.type || 'image/jpeg',
+      target,
+      base64,
+    });
+    return normalizeImageUrl(data?.image_url ?? data?.gambar_url ?? data?.url ?? '');
+  },
+  async createBanner({ adminToken, banner }) {
+    const data = await postJson({
+      action: 'createBanner',
+      admin_token: adminToken,
+      banner: bannerToApi(banner),
+    });
+    return mapBanner(data);
+  },
+  async updateBanner({ adminToken, banner }) {
+    const data = await postJson({
+      action: 'updateBanner',
+      admin_token: adminToken,
+      id: banner.id,
+      banner: bannerToApi(banner),
+    });
+    return mapBanner(data);
+  },
+  async deleteBanner({ adminToken, id }) {
+    return postJson({ action: 'deleteBanner', admin_token: adminToken, id });
+  },
+  async listAdmins({ adminToken, requesterId }) {
+    const data = await postJson({
+      action: 'listAdmins',
+      admin_token: adminToken,
+      requester_id: requesterId,
+    });
+    return asArray(data, ['admins', 'users', 'items', 'data']).map(mapUser);
   },
 };

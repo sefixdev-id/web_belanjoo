@@ -20,6 +20,12 @@ Isi endpoint Apps Script existing:
 
 ```env
 VITE_API_BASE_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
+VITE_FIREBASE_API_KEY=YOUR_FIREBASE_WEB_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN=YOUR_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID=YOUR_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET=YOUR_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID=YOUR_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID=YOUR_FIREBASE_WEB_APP_ID
 ```
 
 Jangan simpan secret atau key private di frontend.
@@ -50,10 +56,32 @@ Hasil production build ada di folder `dist/`.
 - `categories`
 - `banners`
 - `login`
+- `register`
 - `createOrder`
+- `listMyOrders`
 - `listOrders`
 - `updateOrderStatus`
 - `dashboard`
+- `createProduct`
+- `updateProduct`
+- `deleteProduct`
+- `createCategory`
+- `updateCategory`
+- `deleteCategory`
+- `uploadImage`
+- `createBanner`
+- `updateBanner`
+- `deleteBanner`
+
+## Firebase Chat
+
+Website memakai Firebase Web config yang sama dengan Flutter. Koleksi yang digunakan:
+
+- `users`
+- `chat_rooms`
+- `chat_rooms/{roomId}/messages`
+
+Struktur field mengikuti implementasi Flutter di `chat_service.dart`.
 
 ## Catatan Backend
 

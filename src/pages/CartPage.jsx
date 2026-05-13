@@ -10,6 +10,7 @@ export default function CartPage({
   onQtyChange,
   onRemove,
   onCheckout,
+  onCheckoutWhatsApp,
   onGoLogin,
 }) {
   const total = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
@@ -60,9 +61,18 @@ export default function CartPage({
                 <strong>{formatCurrency(total)}</strong>
               </div>
               {user ? (
-                <button className="button button--primary button--block" type="button" disabled={checkoutBusy} onClick={onCheckout}>
-                  {checkoutBusy ? 'Memproses...' : 'Checkout'}
-                </button>
+                user.role === 'user' ? (
+                  <div className="checkout-actions">
+                    <button className="button button--primary button--block" type="button" disabled={checkoutBusy || cartItems.length === 0} onClick={onCheckout}>
+                      {checkoutBusy ? 'Memproses...' : 'Checkout App'}
+                    </button>
+                    <button className="button button--ghost button--block" type="button" disabled={checkoutBusy || cartItems.length === 0} onClick={onCheckoutWhatsApp}>
+                      Checkout WhatsApp
+                    </button>
+                  </div>
+                ) : (
+                  <p className="form-message">Akun admin tidak dapat membuat pesanan.</p>
+                )
               ) : (
                 <button className="button button--primary button--block" type="button" onClick={onGoLogin}>
                   Login untuk checkout
