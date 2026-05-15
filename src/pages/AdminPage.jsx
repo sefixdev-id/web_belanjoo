@@ -185,6 +185,7 @@ export default function AdminPage({
         {activeTab === 'banners' && (
           <AdminBanners user={user} banners={banners} onSaved={refreshBanners} notify={notify} />
         )}
+        <p className="admin-signature">© 2026 BELANJOO • Developed by Sefriwal</p>
       </section>
     </main>
   );

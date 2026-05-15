@@ -1,3 +1,9 @@
+/*
+ * BELANJOO website footer.
+ * Developed by Sefriwal - github.com/sefixdev-id
+ * Copyright (c) 2026
+ */
+
 import BrandLogo from './BrandLogo.jsx';
 
 export default function SiteFooter({ onNavigate }) {
@@ -22,8 +28,8 @@ export default function SiteFooter({ onNavigate }) {
         </div>
       </div>
       <div className="site-footer__bottom">
-        <span>Copyright 2026 BELANJOO. All rights reserved.</span>
-        <span>Belanja mudah, hidup lebih praktis.</span>
+        <span>© 2026 BELANJOO • Developed by Sefriwal</span>
+        <a href="https://github.com/sefixdev-id" target="_blank" rel="noreferrer">github.com/sefixdev-id</a>
       </div>
     </footer>
   );

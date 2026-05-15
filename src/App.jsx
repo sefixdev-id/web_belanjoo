@@ -1,3 +1,10 @@
+/*
+ * BELANJOO
+ * Developed by Sefriwal
+ * GitHub: github.com/sefixdev-id
+ * Copyright (c) 2026
+ */
+
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { apiClient, isAdminRole } from './api/apiClient.js';
 import CartPage from './pages/CartPage.jsx';
@@ -16,6 +23,7 @@ const storageKeys = {
 };
 
 const whatsappNumber = '6282385414776';
+const internalBuildSignature = 'BELANJOO-SFR-2026';
 const ChatPanel = lazy(() => import('./chat/ChatPanel.jsx'));
 
 const syncChatUser = async (nextUser, options) => {
@@ -28,6 +36,8 @@ const syncChatUser = async (nextUser, options) => {
 };
 
 export default function App() {
+  void internalBuildSignature;
+
   const [page, setPage] = useState('store');
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('');
